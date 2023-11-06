@@ -1,10 +1,7 @@
 import { Elysia } from "elysia";
-import { staticPlugin } from "@elysiajs/static";
+import { cookie } from '@elysiajs/cookie';
+import { jwt } from '@elysiajs/jwt';
 import mongoose, { Document } from "mongoose";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import cors from "cors";
-import dotenv from "dotenv";
 
 interface UserDocument extends Document {
   username: string;
@@ -18,18 +15,16 @@ interface TransportationDocument extends Document {
   measurement: string;
 }
 
-const app = new Elysia()
-  .use(staticPlugin())
-  .use(cors())
-  .listen(3000);
-
-dotenv.config();
+const app = new Elysia().use(
+  jwt({
+    name: 'jwt',
+    secret: 'HvNIZBs13Wi5QP0L+uQx5JKJUiVtMbg47yzHhHVICyChDgPHeZd9NhEQUNtDIaiGGm1XczOP7+LIc+T7YpRGEu0lZIbbr8HxkGz8+gvTVlPIxRsEX2ysN3r6TG0WhFznK88O+QtL6ZjtUYu3LqbfyWALWZ+T24E+0xJuVw=='
+  })
+)
+  .use(cookie())
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect('mongodb+srv://minkatahvanainen:sDrm1Hl10eAKLXGG@transportationtracker.327za8e.mongodb.net/?retryWrites=true&w=majority');
 
 const UserSchema = new mongoose.Schema({
   username: { type: String, unique: true },
@@ -70,7 +65,7 @@ app.post("/register", async (req: any) => {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await Bun.password.hash(password);
 
     const user = new User({ username, password: hashedPassword });
     await user.save();
@@ -101,7 +96,7 @@ app.post("/login", async (req: any) => {
       );
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await Bun.password.verify(password, user.password);
 
     if (!passwordMatch) {
       return new Response(
@@ -125,4 +120,8 @@ app.post("/login", async (req: any) => {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+});
+
+app.listen(8000, () => {
+  console.log("Server running on port 8000");
 });
