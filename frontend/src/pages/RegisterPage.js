@@ -20,18 +20,25 @@ function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    axios.post(`${API_URL}/register`, formData)
-    .then(() => {
+    try {
+      // Make a POST request to the "/register" endpoint
+      await axios.post(`${API_URL}/register`, formData);
+
       // Registration success
       setSuccessMessage("Registration successful. You can now login.");
       setErrorMessage("");
-    })
-    .catch((err) => {
+    } catch (error) {
       // Registration failure
-      setSuccessMessage("");
-      setErrorMessage("Registration failed. Please try again.");
-      console.error(err);
-    });;
+      if (error.response && error.response.status === 400) {
+        // Handle the case where the username is already taken
+        setErrorMessage("Someone already took this username. Please choose a different one.");
+      } else {
+        // Handle other registration errors
+        setErrorMessage("Registration failed. Please try again.");
+      }
+
+      console.error(error);
+    }
   };
 
   return (

@@ -5,7 +5,7 @@ import {
   Route,
   NavLink,
 } from "react-router-dom";
-import LoginPage, { setAuthToken } from "./pages/LoginPage";
+import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 
@@ -14,7 +14,6 @@ function App() {
 
   const handleLogOut = () => {
     localStorage.removeItem("token");
-    setAuthToken(null);
     window.location.href = "/";
   };
   return (

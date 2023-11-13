@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { setAuthToken } from "./LoginPage";
 
 function ProfilePage() {
   const [userName, setUserName] = useState("");
@@ -22,16 +21,16 @@ function ProfilePage() {
           },
         })
         .then((response) => {
-          setUserName(response.data.username);
+          setUserName(response.data.data.userData.username);
           // After fetching the user's profile, fetch their transportation data
           axios
-            .get(`${API_URL}/transportations/${response.data.username}`, {
+            .get(`${API_URL}/transportations`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             })
             .then((transportationResponse) => {
-              setTransportationData(transportationResponse.data);
+              setTransportationData(transportationResponse.data.data.transportations);
             })
             .catch((transportationError) => {
               console.error("Error fetching transportation data:", transportationError);
@@ -39,23 +38,21 @@ function ProfilePage() {
         })
         .catch((err) => {
           localStorage.removeItem("token");
-          setAuthToken(null);
           // Handle errors, e.g., token expired or unauthorized
           console.error(err);
         });
     }
   }, [token]);
-  
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     const formData = {
       vehicle,
       amount,
       measurement,
     };
-  
     axios
       .post(`${API_URL}/submit-transportation`, formData, {
         headers: {
@@ -63,22 +60,20 @@ function ProfilePage() {
         },
       })
       .then((response) => {
-        console.log("Data submitted successfully:", response.data);
-  
+
         // After successfully submitting the data, fetch the updated transportation data
         axios
-          .get(`${API_URL}/transportations/${userName}`, {
+          .get(`${API_URL}/transportations`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           })
           .then((transportationResponse) => {
-            setTransportationData(transportationResponse.data);
+            setTransportationData(transportationResponse.data.data.transportations);
           })
           .catch((transportationError) => {
-            console.error("Error fetching transportation data:", transportationError);
           });
-  
+
         setVehicle("airplane");
         setAmount(0);
         setMeasurement("hours");
@@ -136,7 +131,7 @@ function ProfilePage() {
             <input
               type="number"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => setAmount(parseInt(e.target.value))}
               placeholder="Enter new data"
             />
             <select

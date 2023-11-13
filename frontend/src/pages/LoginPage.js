@@ -1,20 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-export const setAuthToken = token => {
-  if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  }
-  else
-      delete axios.defaults.headers.common["Authorization"];
-}
-
 function LoginPage() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
-  const [error, setError] = useState(""); 
+  const [error, setError] = useState("");
   const API_URL = "http://localhost:8080";
 
   const handleChange = (e) => {
@@ -29,16 +21,9 @@ function LoginPage() {
     axios
       .post(`${API_URL}/login`, formData)
       .then((response) => {
-        //get token from response
-        const token = response.data.token;
-
+        console.log("accesstoken", response.data.accessToken);
         //set JWT token to local
-        localStorage.setItem("token", token);
-
-        //set token to axios common header
-        setAuthToken(token);
-
-        //redirect user to home page
+        localStorage.setItem("token", response.data.accessToken);
         window.location.href = "/";
       })
       .catch((err) => {
